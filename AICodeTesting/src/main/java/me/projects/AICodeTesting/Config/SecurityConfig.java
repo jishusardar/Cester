@@ -13,8 +13,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity httpSecurity,
             CustomOidcUserService customOidcUserService){
-        httpSecurity.authorizeHttpRequests(
-                auth->auth.requestMatchers("/api/testing/").permitAll()
+        httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(
+                auth->auth.requestMatchers("/api/testing/public/**","/error").permitAll()
                         .anyRequest().authenticated()
         )
                 .oauth2Login(oauth->

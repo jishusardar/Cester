@@ -1,6 +1,6 @@
 package me.projects.AICodeTesting.Service.OidcService;
 
-import me.projects.AICodeTesting.Service.TestingService;
+import me.projects.AICodeTesting.Service.Testing.TestingService;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;

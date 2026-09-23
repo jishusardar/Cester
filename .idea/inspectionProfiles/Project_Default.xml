@@ -5,6 +5,8 @@
       <option name="customHeaders">
         <set>
           <option value="X-User-subject" />
+          <option value="X-Microservice-Name" />
+          <option value="X-User-Auth" />
         </set>
       </option>
     </inspection_tool>

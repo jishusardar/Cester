@@ -1,8 +1,9 @@
 package me.projects.AICodeTesting.Controller;
 
-import me.projects.AICodeTesting.Dto.RequestDTO.TestCaseRequestDTO;
+import me.projects.AICodeTesting.Dto.RequestDTO.StressTestCodeRequest;
+import me.projects.AICodeTesting.Dto.ResponseDTO.StressCodeResponse;
 import me.projects.AICodeTesting.Dto.ResponseDTO.TestCaseResponseDTO;
-import me.projects.AICodeTesting.Service.TestingService;
+import me.projects.AICodeTesting.Service.Testing.TestingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,9 +23,14 @@ public class TestingController {
         return "Welcome Home "+oidcUser.getFullName();
     }
 
-    @PostMapping
-    public ResponseEntity<TestCaseResponseDTO> generateTestCases(@RequestBody TestCaseRequestDTO testCaseRequestDTO){
-        TestCaseResponseDTO testCaseResponseDTO= testingService.generateTestCases(testCaseRequestDTO);
+    @PostMapping("/TestCases")
+    public ResponseEntity<TestCaseResponseDTO> GenerateTestcases(@RequestBody StressTestCodeRequest stresstestCodeRequest){
+        TestCaseResponseDTO testCaseResponseDTO= testingService.generateTestCases(stresstestCodeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(testCaseResponseDTO);
+    }
+    @PostMapping("/public/Stress")
+    public ResponseEntity<StressCodeResponse> StressTestingCode(@RequestBody StressTestCodeRequest stressTestCodeRequest){
+       StressCodeResponse stressCodeResponse=testingService.StressTestCode(stressTestCodeRequest);
+        return ResponseEntity.ok(stressCodeResponse);
     }
 }

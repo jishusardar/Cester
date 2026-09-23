@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -24,6 +25,8 @@ public class User {
     @Column(name = "Roles",nullable = false)
     private String role;
     private String providerSubject;
+    @Column(nullable = false)
+    private BigDecimal credits;
     @Column(name = "Deleted")
     private Boolean isDeleted;
 }
