@@ -1,0 +1,15 @@
+package me.projects.AiModel.DTO;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CodeUserPrompt {
+    private String Code;
+    private String UserInputs;
+}

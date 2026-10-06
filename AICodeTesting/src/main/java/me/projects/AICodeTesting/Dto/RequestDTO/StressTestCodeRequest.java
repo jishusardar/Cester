@@ -10,4 +10,5 @@ import lombok.Setter;
 public class StressTestCodeRequest {
     private String UsernameSubject;
     private String Code;
+    private String Userinputs;
 }
