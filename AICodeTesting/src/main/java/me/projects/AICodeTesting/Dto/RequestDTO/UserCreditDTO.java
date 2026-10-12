@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserCredituseDTO {
+public class UserCreditDTO {
     private String Userid;
     private BigDecimal Credit;
 }

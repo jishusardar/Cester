@@ -5,6 +5,9 @@ import me.projects.Usermanagement.DTo.UserRequestDTo;
 import me.projects.Usermanagement.DTo.UserResponseDTO;
 import me.projects.Usermanagement.Entity.User;
 import me.projects.Usermanagement.Repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +31,7 @@ public class UserService {
         } else {
             user = new User();
             user.setUserEmail(userRequestDTo.getUserEmail());
-            user.setCredits(BigDecimal.valueOf(5));
+            user.setCredits(BigDecimal.valueOf(10));
         }
         user.setName(userRequestDTo.getName());
         user.setLastOnline(LocalDateTime.now());
@@ -38,6 +41,7 @@ public class UserService {
         userRepository.save(user);
        return new UserResponseDTO(user.getName(),"Welcome to Cester");
     }
+    @CacheEvict(value = "User",key = "#Subject")
     public boolean findUserBySubject(String Subject){
         Optional<User> user=userRepository.findByProviderSubjectAndIsDeletedIsFalse(Subject);
         if(user.isPresent())
@@ -51,6 +55,7 @@ public class UserService {
         user.setIsDeleted(true);
         return new UserResponseDTO(user.getName(),"User Deleted Successfully");
     }
+    @CachePut(value = "UserCredit", key = "#Userid")
     public BigDecimal getUserCredits(String Userid){
         User user=userRepository.findByProviderSubjectAndIsDeletedIsFalse(Userid).orElseThrow(()-> new RuntimeException("User Not Found"));
         return user.getCredits();
