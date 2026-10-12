@@ -2,6 +2,10 @@ package me.projects.AiModel.Service;
 
 import me.projects.AiModel.DTO.CodeRequestDto;
 import me.projects.AiModel.DTO.CodeUserPrompt;
+import me.projects.AiModel.DTO.TokenTransactionDTO;
+import me.projects.AiModel.DTO.UserCredituseDTO;
+import me.projects.AiModel.Kafka.TokenEventPublisher;
+import me.projects.AiModel.Kafka.TokenLogsPublisher;
 import me.projects.AiModel.Repository.llm_blocked_words;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -23,6 +27,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Service
 public class ChatService implements ChatServiceModel {
     private final ChatClient  codingChatClient;
@@ -43,15 +50,19 @@ public class ChatService implements ChatServiceModel {
     private Resource userRequestString;
     private VectorStore vectorStore;
     private CraftingUserContext craftingUserContext;
+    private TokenEventPublisher tokenEventPublisher;
+    private TokenLogsPublisher tokenLogsPublisher;
     public ChatService(@Qualifier("PromptChatClient") ChatClient promptChatClient,
                        @Qualifier("CodingChatClient") ChatClient codingChatClient, llm_blocked_words llmBlockedWords,
-                       ChatMemory chatMemory, CraftingUserContext craftingUserContext, VectorStore vectorStore){
+                       ChatMemory chatMemory, CraftingUserContext craftingUserContext, VectorStore vectorStore,TokenEventPublisher tokenEventPublisher,TokenLogsPublisher tokenLogsPublisher){
         this.promptChatClient=promptChatClient;
         this.codingChatClient=codingChatClient;
         this.llmBlockedWords=llmBlockedWords;
         this.chatMemory=chatMemory;
         this.craftingUserContext = craftingUserContext;
         this.vectorStore=vectorStore;
+        this.tokenEventPublisher=tokenEventPublisher;
+        this.tokenLogsPublisher=tokenLogsPublisher;
     }
     @Override
     public CodeUserPrompt Chat_with_Prompt_Model(CodeRequestDto codeRequestDto, String userid) {
@@ -79,9 +90,9 @@ public class ChatService implements ChatServiceModel {
                         .param("userInputs", input))
                 .call().content();
     }
-
     @Override
     public Flux<String> Chat_With_Model_Code(CodeRequestDto codeRequestDto, String userid) {
+        EventPublishers(userid,"0.5");
         CodeUserPrompt codeUserPrompt=Chat_with_Prompt_Model(codeRequestDto,userid);
         String code = codeUserPrompt.getCode();
         String userInputs = codeUserPrompt.getUserInputs();
@@ -114,6 +125,7 @@ public class ChatService implements ChatServiceModel {
 
     @Override
     public Flux<String> Chat_With_Model_Code(String input, String userid) {
+        EventPublishers(userid,"0.1");
         String uinput=Chat_with_Prompt_Model(input,userid);
         return codingChatClient.prompt()
                 .advisors(new SafeGuardAdvisor(llmBlockedWords.FetchListWords()),
@@ -137,5 +149,15 @@ public class ChatService implements ChatServiceModel {
                                 .param("userInputs", uinput)
                 )
                 .stream().content();
+    }
+    public void EventPublishers(String userid,String credits){
+        UserCredituseDTO userCredituseDTO=new UserCredituseDTO(userid,new BigDecimal(credits));
+        tokenEventPublisher.publishTokenEvent(userCredituseDTO);
+        TokenTransactionDTO tokenTransactionDTO=new TokenTransactionDTO();
+        tokenTransactionDTO.setUserid(userid);
+        tokenTransactionDTO.setAmount(new BigDecimal(credits));
+        tokenTransactionDTO.setLocalDateTime(LocalDateTime.now());
+        tokenTransactionDTO.setStatus("Debited");
+        tokenLogsPublisher.TokenLogs(tokenTransactionDTO);
     }
 }

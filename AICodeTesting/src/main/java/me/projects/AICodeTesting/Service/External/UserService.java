@@ -1,38 +1,49 @@
 package me.projects.AICodeTesting.Service.External;
-
-import me.projects.AICodeTesting.Dto.RequestDTO.UserCreditDTO;
 import me.projects.AICodeTesting.Dto.RequestDTO.UserRequestDTO;
 import me.projects.AICodeTesting.Dto.RequestDTO.UserResponseDTO;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 
-@FeignClient(name = "USERMANAGEMENT")
-public interface UserService {
+@Service
+public class UserService {
 
-    @PostMapping("/api/users/save")
-    UserResponseDTO SaveUser(
-            @RequestHeader("X-Microservice-Name") String microservice,
-            @RequestBody UserRequestDTO userRequestDTO);
+    private final WebClient webClient;
 
-    @GetMapping("/api/users/{usersubject}")
-    String getUserBySubject(
-            @RequestHeader("X-Microservice-Name") String microservice,
-            @RequestHeader("X-User-Auth") String subject,
-            @PathVariable String usersubject);
+    public UserService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("http://USERMANAGEMENT").build();
+    }
 
-    @GetMapping("/api/users/credits")
-    BigDecimal getUserCredits(
-            @RequestHeader("X-Microservice-Name") String microservice,
-            @RequestHeader("X-User-Auth") String subject
-    );
-    @PutMapping("/api/users/credits/removed")
-    void subtractUserCredit(@RequestHeader("X-Microservice-Name") String microservice,
-                            @RequestHeader("X-User-Auth") String subject,
-                            @RequestBody UserCreditDTO userCreditDTO);
-    @PutMapping("/api/users/credits/add")
-    void AddUserCredits(@RequestHeader("X-Microservice-Name") String microservice,
-                        @RequestHeader("X-User-Auth") String subject,
-                        @RequestBody UserCreditDTO userCreditDTO);
+    public UserResponseDTO SaveUser(String microservice, UserRequestDTO userRequestDTO) {
+        return webClient.post()
+                .uri("/api/users/save")
+                .header("X-Microservice-Name", microservice)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(userRequestDTO)
+                .retrieve()
+                .bodyToMono(UserResponseDTO.class)
+                .block();
+    }
+
+    public String getUserBySubject(String microservice, String subject, String usersubject) {
+        return webClient.get()
+                .uri("/api/users/{usersubject}", usersubject)
+                .header("X-Microservice-Name", microservice)
+                .header("X-User-Auth", subject)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+    }
+
+    public BigDecimal getUserCredits(String microservice, String subject) {
+        return webClient.get()
+                .uri("/api/users/credits")
+                .header("X-Microservice-Name", microservice)
+                .header("X-User-Auth", subject)
+                .retrieve()
+                .bodyToMono(BigDecimal.class)
+                .block();
+    }
 }

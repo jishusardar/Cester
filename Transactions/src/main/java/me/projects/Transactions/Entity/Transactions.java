@@ -19,15 +19,17 @@ public class Transactions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userid;
+    private String userid;
     private BigDecimal amount;
     private LocalDateTime localDateTime;
     private String status;
+    private boolean isDeleted;
 
-    public Transactions(Long userid, BigDecimal amount, LocalDateTime localDateTime, String status) {
+    public Transactions(String userid, BigDecimal amount, LocalDateTime localDateTime, String status) {
         this.userid = userid;
         this.amount = amount;
         this.localDateTime = localDateTime;
         this.status = status;
+        this.isDeleted=false;
     }
 }

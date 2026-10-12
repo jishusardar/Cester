@@ -6,6 +6,7 @@ import me.projects.AICodeTesting.Dto.ResponseDTO.StressCodeResponse;
 import me.projects.AICodeTesting.Dto.ResponseDTO.TestCaseResponseDTO;
 import me.projects.AICodeTesting.Service.Testing.TestingService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -25,14 +26,19 @@ public class TestingController {
         return "Welcome Home "+oidcUser.getFullName();
     }
 
-    @PostMapping("/code/Codetalk")
-    public ResponseEntity<Flux<String>> CodeTalkingModel(@RequestBody UserChatRequest userChatRequest){
-        Flux<String> res= testingService.getUserResponseFromCode(userChatRequest);
+    @PostMapping(value = "/code/Codetalk", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<Flux<String>> CodeTalkingModel(
+            @RequestBody UserChatRequest userChatRequest,
+            @AuthenticationPrincipal OidcUser oidcUser) {
+        Flux<String> res = testingService.getUserResponseFromCode(userChatRequest, oidcUser.getSubject());
         return ResponseEntity.ok(res);
     }
-    @GetMapping("/code/talk")
-    public ResponseEntity<Flux<String>> TalkingModel(@RequestParam("input") String codes){
-       Flux<String>res=testingService.getUserResponse(codes);
+
+    @GetMapping(value = "/code/talk", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<Flux<String>> TalkingModel(
+            @RequestParam("input") String codes,
+            @AuthenticationPrincipal OidcUser oidcUser) {
+        Flux<String> res = testingService.getUserResponse(codes, oidcUser.getSubject());
         return ResponseEntity.ok(res);
     }
 //    @GetMapping("/public/checkuser")
